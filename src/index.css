@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  
+  body {
+    @apply bg-sableClair text-blueMarine;
+  }
+
+  .font-numeric {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  button {
+    @apply transition-colors duration-200 hover:bg-white/10;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-blancCasse rounded-2xl shadow-md p-5;
+  }
+
+  .sidebar-item {
+    @apply flex items-center gap-3 text-blancCasse/90 hover:text-blancCasse transition-colors duration-200 py-3 px-4 relative hover:bg-white/10;
+  }
+
+  .sidebar-item.active {
+    @apply text-orangeMorocain font-semibold;
+  }
+
+  .sidebar-item.active::before {
+    content: '';
+    @apply absolute left-0 top-0 h-full w-1 bg-orangeMorocain rounded-r;
+  }
+
+  .circular-progress {
+    @apply relative flex items-center justify-center;
+  }
+
+  .circular-progress svg {
+    @apply transform -rotate-90;
+  }
+
+  .circular-progress .circular-text {
+    @apply absolute font-numeric font-medium;
+  }
+
+  /* === Global hover utilities for all interactive components === */
+  .btn-hover {
+    @apply transition-colors duration-200 hover:bg-white/10;
+  }
+  .row-hover {
+    @apply transition-colors duration-200 hover:bg-white/10;
+  }
+  .card-hover {
+    @apply transition-colors duration-200 hover:bg-white/10;
+  }
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Containers Table Styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+.modal {
+  position: fixed;
+  top: 20%;
+  left: 30%;
+  background: white;
+  border: 1px solid #333;
+  padding: 20px;
+  z-index: 1000;
+}
