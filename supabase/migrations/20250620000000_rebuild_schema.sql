@@ -245,6 +245,29 @@ create table if not exists public.resource_usage (
 
 alter table public.resource_usage enable row level security;
 
+-- 10. Simulation Logs Table
+create table if not exists public.simulation_logs (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references public.users(id),
+  user_name text not null,
+  user_role text,
+  action text not null,
+  category text not null check (category in ('navires', 'grues', 'conteneurs', 'douane')),
+  timestamp timestamptz default now() not null,
+  details text,
+  created_at timestamptz default now() not null
+);
+
+alter table public.simulation_logs enable row level security;
+
+create policy "Users can view simulation logs"
+  on public.simulation_logs for select
+  using (true);
+
+create policy "Users can insert simulation logs"
+  on public.simulation_logs for insert
+  with check (true);
+
 -- 10. Sample Data Insertion for Zones and Containers
 
 -- Insert sample zones (berths and storage)

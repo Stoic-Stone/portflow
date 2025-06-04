@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ship, Plane as Crane, Package, Warehouse } from 'lucide-react';
+import { Ship, Plane as Crane, Package } from 'lucide-react';
 
 const TerminalStatusBlock = () => {
   // Status Card Component
@@ -67,7 +67,7 @@ const TerminalStatusBlock = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <StatusCard 
         icon={<Ship size={20} className="text-white" />} 
         title="Navires" 
@@ -91,14 +91,6 @@ const TerminalStatusBlock = () => {
         total={200} 
         status="Attention"
         color="bg-yellow-500"
-      />
-      <StatusCard 
-        icon={<Warehouse size={20} className="text-white" />} 
-        title="Douane" 
-        current={1} 
-        total={1} 
-        status="Ouvert"
-        color="bg-green-600"
       />
     </div>
   );

@@ -13,13 +13,21 @@ const Sidebar = () => {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
 
+  // Determine home path based on user role
+  const getHomePath = () => {
+    if (user?.role === 'admin') return '/admin/dashboard';
+    if (user?.role === 'supervisor') return '/supervisor/dashboard';
+    if (user?.role === 'logistics_agent') return '/logistics/dashboard';
+    return '/';
+  };
+
   const navItems = [
-    { id: 'home', label: 'Accueil', icon: <Home size={22} />, to: '/supervisor/dashboard' },
+    { id: 'home', label: 'Accueil', icon: <Home size={22} />, to: getHomePath() },
     { id: 'vessels', label: 'Navires', icon: <Ship size={22} />, to: '/navires' },
     { id: 'containers', label: 'Conteneurs', icon: <Package size={22} />, to: '/conteneurs' },
     { id: 'equipment', label: 'Equipements', icon: <Settings size={22} />, to: '/equipements' },
     { id: 'statistics', label: 'Statistiques', icon: <BarChart2 size={22} />, to: '/statistiques' },
-    ...(user?.role !== 'logistics_agent' ? [{ id: 'logs', label: 'Logs Simulation', icon: <BarChart2 size={22} />, to: '/logs-simulation' }] : []),
+    ...(user?.role === 'logistics_agent' ? [] : [{ id: 'logs', label: 'Logs Simulation', icon: <BarChart2 size={22} />, to: '/logs-simulation' }]),
     ...(user?.role === 'admin' ? [{ id: 'users', label: 'Utilisateurs', icon: <Users size={22} />, to: '/admin/users' }] : []),
   ];
 

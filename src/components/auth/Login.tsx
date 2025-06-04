@@ -39,7 +39,7 @@ export default function Login() {
       } else if (user.role === 'supervisor') {
         navigate('/supervisor/dashboard');
       } else if (user.role === 'logistics_agent') {
-        navigate('/logistics_agent/dashboard');
+        navigate('/logistics/dashboard');
       } else {
         navigate('/');
       }

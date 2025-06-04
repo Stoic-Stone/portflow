@@ -14,6 +14,7 @@ import { AuthProvider } from './context/AuthContext';
 import Login from './components/auth/Login';
 import UsersPage from './pages/admin/UsersPage';
 import { useAuth } from './context/AuthContext';
+import LogisticsDashboard from './pages/logistics/Dashboard';
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -71,7 +72,8 @@ function App() {
             <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="/supervisor/dashboard" element={<DashboardPage />} />
               <Route path="/admin/dashboard" element={<DashboardPage />} />
-              <Route path="/logistics_agent/dashboard" element={<DashboardPage />} />
+              <Route path="/logistics/dashboard" element={<DashboardPage />} />
+              <Route path="/logistics_agent/dashboard" element={<Navigate to="/logistics/dashboard" replace />} />
               <Route path="/navires" element={<NaviresPage />} />
               <Route path="/conteneurs" element={<ConteneursPage />} />
               <Route path="/equipements" element={<EquipementsPage />} />

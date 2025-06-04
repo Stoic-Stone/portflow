@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import WelcomeBlock from '../components/dashboard/WelcomeBlock';
 import TerminalStatusBlock from '../components/dashboard/TerminalStatusBlock';
 import MetricVisualization from '../components/dashboard/MetricVisualization';
@@ -8,7 +9,6 @@ import ResourcesEnergyBlock from '../components/dashboard/ResourcesEnergyBlock';
 import NaviresCard from '../components/dashboard/NaviresCard';
 import GruesCard from '../components/dashboard/GruesCard';
 import ConteneursCard from '../components/dashboard/ConteneursCard';
-// import DouaneCard from '../components/dashboard/DouaneCard';
 // import SecurityCard from '../components/dashboard/SecurityCard';
 
 const DashboardPage = () => {
@@ -17,6 +17,7 @@ const DashboardPage = () => {
   // const lastIncident = 'Incident signalé: colis suspect';
 
   const [search, setSearch] = useState('');
+  const { user } = useAuth();
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -63,10 +64,12 @@ const DashboardPage = () => {
       <div className="w-full mb-2">
         <PortEquipmentBlock />
       </div>
-      {/* Team Members Block */}
-      <div className="w-full mb-2">
-        <TeamMembersBlock />
-      </div>
+      {/* Team Members Block - Only show for admin and supervisor */}
+      {user?.role !== 'logistics_agent' && (
+        <div className="w-full mb-2">
+          <TeamMembersBlock />
+        </div>
+      )}
       {/* Resources & Energy Block */}
       <div className="w-full">
         <ResourcesEnergyBlock />

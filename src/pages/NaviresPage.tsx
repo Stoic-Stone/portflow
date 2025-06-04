@@ -3,6 +3,7 @@ import { fetchVessels, createVessel, updateVessel, deleteVessel } from '../lib/a
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 interface Vessel {
   id: string;
@@ -64,6 +65,7 @@ const NaviresPage = () => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean, vessel: Vessel | null }>({ open: false, vessel: null });
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchVessels()
@@ -198,7 +200,11 @@ const NaviresPage = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-blueMarine">Gestion des Navires</h1>
-        <button className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition" onClick={openCreateModal}>Ajouter un navire</button>
+        {user && user.role === 'admin' && (
+          <button className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition" onClick={openCreateModal}>
+            Ajouter un navire
+          </button>
+        )}
       </div>
       <div className="flex flex-wrap gap-4 mb-6 items-end">
         <div>
@@ -286,30 +292,34 @@ const NaviresPage = () => {
                                 </button>
                               )}
                             </Menu.Item>
-                            <Menu.Item>
-                              {({ active }: { active: boolean }) => (
-                                <button
-                                  onClick={() => openEditModal(vessel)}
-                                  className={`${
-                                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                  } group flex w-full items-center px-4 py-2 text-sm`}
-                                >
-                                  Modifier
-                                </button>
-                              )}
-                            </Menu.Item>
-                            <Menu.Item>
-                              {({ active }: { active: boolean }) => (
-                                <button
-                                  onClick={() => openDeleteConfirm(vessel)}
-                                  className={`${
-                                    active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                  } group flex w-full items-center px-4 py-2 text-sm`}
-                                >
-                                  Supprimer
-                                </button>
-                              )}
-                            </Menu.Item>
+                            {user && user.role === 'admin' && (
+                              <>
+                                <Menu.Item>
+                                  {({ active }: { active: boolean }) => (
+                                    <button
+                                      onClick={() => openEditModal(vessel)}
+                                      className={`${
+                                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                      } group flex w-full items-center px-4 py-2 text-sm`}
+                                    >
+                                      Modifier
+                                    </button>
+                                  )}
+                                </Menu.Item>
+                                <Menu.Item>
+                                  {({ active }: { active: boolean }) => (
+                                    <button
+                                      onClick={() => openDeleteConfirm(vessel)}
+                                      className={`${
+                                        active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                      } group flex w-full items-center px-4 py-2 text-sm`}
+                                    >
+                                      Supprimer
+                                    </button>
+                                  )}
+                                </Menu.Item>
+                              </>
+                            )}
                           </div>
                         </Menu.Items>
                       </Transition>

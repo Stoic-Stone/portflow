@@ -3,6 +3,7 @@ import { fetchEquipment, createEquipment, updateEquipment, deleteEquipment } fro
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 interface Equipment {
   id: number;
@@ -58,6 +59,7 @@ const EquipementsPage = () => {
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState<{ open: boolean, equipment: Equipment | null }>({ open: false, equipment: null });
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchEquipment()
@@ -182,7 +184,11 @@ const EquipementsPage = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-blueMarine">Gestion des Équipements</h1>
-        <button className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition" onClick={openCreateModal}>Ajouter un équipement</button>
+        {user && user.role === 'admin' && (
+          <button className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition" onClick={openCreateModal}>
+            Ajouter un équipement
+          </button>
+        )}
       </div>
       <div className="flex flex-wrap gap-4 mb-6 items-end">
         <div>
@@ -281,30 +287,34 @@ const EquipementsPage = () => {
                                 </button>
                               )}
                             </Menu.Item>
-                            <Menu.Item>
-                              {({ active }: { active: boolean }) => (
-                                <button
-                                  onClick={() => openEditModal(eq)}
-                                  className={`${
-                                    active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                  } group flex w-full items-center px-4 py-2 text-sm`}
-                                >
-                                  Modifier
-                                </button>
-                              )}
-                            </Menu.Item>
-                            <Menu.Item>
-                              {({ active }: { active: boolean }) => (
-                                <button
-                                  onClick={() => openDeleteConfirm(eq)}
-                                  className={`${
-                                    active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                  } group flex w-full items-center px-4 py-2 text-sm`}
-                                >
-                                  Supprimer
-                                </button>
-                              )}
-                            </Menu.Item>
+                            {user && user.role === 'admin' && (
+                              <>
+                                <Menu.Item>
+                                  {({ active }: { active: boolean }) => (
+                                    <button
+                                      onClick={() => openEditModal(eq)}
+                                      className={`${
+                                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                      } group flex w-full items-center px-4 py-2 text-sm`}
+                                    >
+                                      Modifier
+                                    </button>
+                                  )}
+                                </Menu.Item>
+                                <Menu.Item>
+                                  {({ active }: { active: boolean }) => (
+                                    <button
+                                      onClick={() => openDeleteConfirm(eq)}
+                                      className={`${
+                                        active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                      } group flex w-full items-center px-4 py-2 text-sm`}
+                                    >
+                                      Supprimer
+                                    </button>
+                                  )}
+                                </Menu.Item>
+                              </>
+                            )}
                           </div>
                         </Menu.Items>
                       </Transition>

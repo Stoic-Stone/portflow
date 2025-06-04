@@ -1,3 +1,5 @@
+import { supabase } from './supabase';
+
 const API_URL = 'http://localhost:3001';
 
 // --- Containers ---
@@ -204,18 +206,33 @@ export const fetchActiveTeam = async () => {
 };
 
 // --- Simulation Logs ---
-export const insertSimulationLog = async (log: any) => {
-  const res = await fetch(`${API_URL}/simulation_logs`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(log),
-  });
-  if (!res.ok) throw new Error('Failed to insert simulation log');
-  return res.json();
+export const insertSimulationLog = async (log: SimulationLog) => {
+  const { data, error } = await supabase
+    .from('simulation_logs')
+    .insert([log])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };
 
 export const fetchSimulationLogs = async () => {
-  const res = await fetch(`${API_URL}/simulation_logs`);
-  if (!res.ok) throw new Error('Failed to fetch simulation logs');
-  return res.json();
-}; 
+  const { data, error } = await supabase
+    .from('simulation_logs')
+    .select('*')
+    .order('timestamp', { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
+export interface SimulationLog {
+  user_id: string;
+  user_name: string;
+  user_role: string;
+  action: 'SIMULATION_ENABLED' | 'SIMULATION_DISABLED';
+  category: 'navires' | 'grues' | 'conteneurs' | 'douane';
+  timestamp: string;
+  details: string;
+} 

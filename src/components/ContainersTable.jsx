@@ -3,6 +3,7 @@ import { fetchContainers, fetchVessels, createContainer, updateContainer, delete
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 const STATUS_FR = {
   import_waiting: 'En attente import',
@@ -49,6 +50,7 @@ export default function ContainersTable({ tableClassName = "" }) {
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState({ open: false, container: null });
+  const { user } = useAuth();
 
   useEffect(() => {
     async function fetchData() {
@@ -245,7 +247,11 @@ export default function ContainersTable({ tableClassName = "" }) {
             Exporter CSV
           </button>
           <button onClick={resetFilters} className="ml-auto bg-gray-200 px-4 py-2 rounded">Réinitialiser</button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition" onClick={openCreateModal}>Ajouter un conteneur</button>
+          {user && user.role === 'admin' && (
+            <button className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition" onClick={openCreateModal}>
+              Ajouter un conteneur
+            </button>
+          )}
         </div>
       </div>
       <table className={`w-full text-left ${tableClassName}`}>
@@ -304,30 +310,34 @@ export default function ContainersTable({ tableClassName = "" }) {
                               </button>
                             )}
                           </Menu.Item>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                onClick={() => openEditModal(container)}
-                                className={`${
-                                  active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                } group flex w-full items-center px-4 py-2 text-sm`}
-                              >
-                                Modifier
-                              </button>
-                            )}
-                          </Menu.Item>
-                          <Menu.Item>
-                            {({ active }) => (
-                              <button
-                                onClick={() => openDeleteConfirm(container)}
-                                className={`${
-                                  active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                } group flex w-full items-center px-4 py-2 text-sm`}
-                              >
-                                Supprimer
-                              </button>
-                            )}
-                          </Menu.Item>
+                          {user && user.role === 'admin' && (
+                            <>
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => openEditModal(container)}
+                                    className={`${
+                                      active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                    } group flex w-full items-center px-4 py-2 text-sm`}
+                                  >
+                                    Modifier
+                                  </button>
+                                )}
+                              </Menu.Item>
+                              <Menu.Item>
+                                {({ active }) => (
+                                  <button
+                                    onClick={() => openDeleteConfirm(container)}
+                                    className={`${
+                                      active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                    } group flex w-full items-center px-4 py-2 text-sm`}
+                                  >
+                                    Supprimer
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            </>
+                          )}
                         </div>
                       </Menu.Items>
                     </Transition>
