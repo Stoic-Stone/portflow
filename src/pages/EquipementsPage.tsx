@@ -287,33 +287,33 @@ const EquipementsPage = () => {
                                 </button>
                               )}
                             </Menu.Item>
+                            {(user?.role === 'admin' || user?.role === 'supervisor') && (
+                              <Menu.Item>
+                                {({ active }: { active: boolean }) => (
+                                  <button
+                                    onClick={() => openEditModal(eq)}
+                                    className={`${
+                                      active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
+                                    } group flex w-full items-center px-4 py-2 text-sm`}
+                                  >
+                                    Modifier
+                                  </button>
+                                )}
+                              </Menu.Item>
+                            )}
                             {user && user.role === 'admin' && (
-                              <>
-                                <Menu.Item>
-                                  {({ active }: { active: boolean }) => (
-                                    <button
-                                      onClick={() => openEditModal(eq)}
-                                      className={`${
-                                        active ? 'bg-gray-100 text-gray-900' : 'text-gray-700'
-                                      } group flex w-full items-center px-4 py-2 text-sm`}
-                                    >
-                                      Modifier
-                                    </button>
-                                  )}
-                                </Menu.Item>
-                                <Menu.Item>
-                                  {({ active }: { active: boolean }) => (
-                                    <button
-                                      onClick={() => openDeleteConfirm(eq)}
-                                      className={`${
-                                        active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                      } group flex w-full items-center px-4 py-2 text-sm`}
-                                    >
-                                      Supprimer
-                                    </button>
-                                  )}
-                                </Menu.Item>
-                              </>
+                              <Menu.Item>
+                                {({ active }: { active: boolean }) => (
+                                  <button
+                                    onClick={() => openDeleteConfirm(eq)}
+                                    className={`${
+                                      active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                    } group flex w-full items-center px-4 py-2 text-sm`}
+                                  >
+                                    Supprimer
+                                  </button>
+                                )}
+                              </Menu.Item>
                             )}
                           </div>
                         </Menu.Items>

@@ -14,7 +14,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -29,7 +28,6 @@ export default function Login() {
   useEffect(() => {
     // Check if we're in register mode from URL
     const searchParams = new URLSearchParams(location.search);
-    setIsRegister(searchParams.get('register') === 'true');
   }, [location]);
 
   useEffect(() => {
@@ -59,11 +57,7 @@ export default function Login() {
     setError('');
 
     try {
-      if (isRegister) {
-        await register(formData.email, formData.password, formData.name!, formData.role!);
-      } else {
-        await login(formData.email, formData.password);
-      }
+      await login(formData.email, formData.password);
       // Navigation is handled by useEffect
     } catch (error: any) {
       setError(error.message || 'Authentication failed. Please check your credentials.');
@@ -72,9 +66,7 @@ export default function Login() {
     }
   };
 
-  const isFormValid = isRegister 
-    ? formData.email && formData.password && formData.name && formData.role
-    : formData.email && formData.password;
+  const isFormValid = formData.email && formData.password;
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
@@ -107,14 +99,14 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Login/Register Form */}
+          {/* Login Form */}
           <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
             <div className="mb-6">
               <h2 className="text-2xl font-semibold text-white mb-2">
-                {isRegister ? 'Create Account' : 'Welcome Back'}
+                Welcome Back
               </h2>
               <p className="text-slate-300">
-                {isRegister ? 'Sign up to get started' : 'Sign in to access your dashboard'}
+                Sign in to access your dashboard
               </p>
             </div>
 
@@ -126,51 +118,6 @@ export default function Login() {
             )}
 
             <div className="space-y-6">
-              {isRegister && (
-                <>
-                  {/* Name Field */}
-                  <div className="group">
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Full Name
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <User className="h-5 w-5 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
-                      </div>
-                      <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        required
-                        className="block w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/50 transition-all duration-200 backdrop-blur-sm"
-                        placeholder="Enter your full name"
-                        value={formData.name}
-                        onChange={handleChange}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Role Selection */}
-                  <div className="group">
-                    <label className="block text-sm font-medium text-slate-200 mb-2">
-                      Role
-                    </label>
-                    <div className="relative">
-                      <select
-                        id="role"
-                        name="role"
-                        required
-                        className="block w-full pl-4 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-400/50 transition-all duration-200 backdrop-blur-sm"
-                        value={formData.role}
-                        onChange={handleChange}
-                      >
-                        <option value="logistics_agent">Logistics Agent</option>
-                        <option value="supervisor">Supervisor</option>
-                      </select>
-                    </div>
-                  </div>
-                </>
-              )}
 
               {/* Email Field */}
               <div className="group">
@@ -227,24 +174,22 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password (only for login) */}
-              {!isRegister && (
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-2"
-                    />
-                    <span className="ml-2 text-sm text-slate-300">Remember me</span>
-                  </label>
-                  <button
-                    type="button"
-                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-              )}
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-2"
+                  />
+                  <span className="ml-2 text-sm text-slate-300">Remember me</span>
+                </label>
+                <button
+                  type="button"
+                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
 
               {/* Submit Button */}
               <button
@@ -257,40 +202,14 @@ export default function Login() {
                   {loading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                      {isRegister ? 'Creating Account...' : 'Signing In...'}
+                      Signing In...
                     </>
                   ) : (
-                    isRegister ? 'Create Account' : 'Sign In'
+                    'Sign In'
                   )}
                 </div>
               </button>
-
-              {/* Toggle Login/Register */}
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsRegister(!isRegister);
-                    setError('');
-                  }}
-                  className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                >
-                  {isRegister ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
-                </button>
-              </div>
             </div>
-
-            {/* Demo Info (only for login) */}
-            {!isRegister && (
-              <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                <p className="text-xs text-blue-300 mb-2 font-medium">Demo Credentials:</p>
-                <div className="text-xs text-slate-400 space-y-1">
-                  <div>admin@portflow.com - Admin Dashboard</div>
-                  <div>supervisor@portflow.com - Supervisor Dashboard</div>
-                  <div>logistics@portflow.com - Logistics Dashboard</div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Footer */}

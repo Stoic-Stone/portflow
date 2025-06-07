@@ -4,6 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Ship, Package, Settings } from 'lucide-react';
 import DashboardCard from '../../components/ui/DashboardCard';
+import WelcomeBlock from '../../components/dashboard/WelcomeBlock';
+import NaviresCard from '../../components/dashboard/NaviresCard';
+import GruesCard from '../../components/dashboard/GruesCard';
+import ConteneursCard from '../../components/dashboard/ConteneursCard';
+import ContainersTable from '../../components/ContainersTable.jsx';
+import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
 
 interface DashboardData {
   vessels: { total: number; occupied: number };
@@ -19,6 +25,7 @@ const LogisticsDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const [simulationActive, setSimulationActive] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -76,64 +83,47 @@ const LogisticsDashboard = () => {
   const containersPercent = data.containers.total ? Math.round((data.containers.present / data.containers.total) * 100) : 0;
 
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="rounded-full bg-blue-900 text-white w-12 h-12 flex items-center justify-center text-xl font-bold">
-          {user?.first_name?.[0]}{user?.last_name?.[0]}
-        </div>
-        <div>
-          <div className="font-semibold text-lg text-blue-900">
-            {user?.first_name} {user?.last_name}
-          </div>
-          <div className="text-gray-500 text-sm">Agent Logistique</div>
-        </div>
-      </div>
+    <div className="flex flex-col gap-6 p-6">
+      {/* Welcome and summary */}
+      <WelcomeBlock />
 
+      {/* Simulation Alert Banner (show only if simulation is active) */}
+      {simulationActive && (
+        <Alert variant="default" className="mb-4">
+          <AlertTitle>Mode Simulation Actif</AlertTitle>
+          <AlertDescription>
+            Certaines données affichées sont simulées pour des tests/logistique. Désactivez le mode simulation pour revenir aux données réelles.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Main status cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <DashboardCard
-          icon={<Ship />}
-          title="Navires"
-          value={`${data.vessels.occupied}/${data.vessels.total} Navires`}
-          percent={vesselsPercent}
-          badge={{ 
-            label: 'Navires à quai', 
-            color: vesselsPercent > 70 ? '#F97316' : '#22C55E' 
-          }}
-          barColor="#F97316"
-          simulation={undefined}
-          onToggleSimulation={undefined}
-        />
-
-        <DashboardCard
-          icon={<Settings />}
-          title="Équipement actif"
-          value={`${data.equipment.active}/${data.equipment.total} Équipements`}
-          percent={equipmentPercent}
-          badge={{ 
-            label: 'Actif', 
-            color: equipmentPercent > 50 ? '#22C55E' : '#F97316' 
-          }}
-          barColor="#F97316"
-          simulation={undefined}
-          onToggleSimulation={undefined}
-        />
-
-        <DashboardCard
-          icon={<Package />}
-          title="Conteneurs"
-          value={`${data.containers.present}/${data.containers.total} Conteneurs`}
-          percent={containersPercent}
-          badge={{ 
-            label: `${containersPercent}% livré`, 
-            color: containersPercent > 80 ? '#22C55E' : '#F97316' 
-          }}
-          barColor="#F97316"
-          simulation={undefined}
-          onToggleSimulation={undefined}
-        />
+        <NaviresCard />
+        <GruesCard />
+        <ConteneursCard />
       </div>
 
-      {/* Add other logistics-specific components here */}
+      {/* Occupation rate graph (DonutChart) - Uncomment if component exists */}
+      {/*
+      <div className="my-6">
+        <DonutChart data={...} />
+      </div>
+      */}
+
+      {/* Filterable containers list */}
+      <div className="my-6">
+        <h2 className="text-xl font-semibold mb-2">Liste des conteneurs</h2>
+        <ContainersTable />
+      </div>
+
+      {/* Movement history/timeline - Uncomment if component exists */}
+      {/*
+      <div className="my-6">
+        <h2 className="text-xl font-semibold mb-2">Historique des mouvements</h2>
+        <Timeline data={...} />
+      </div>
+      */}
     </div>
   );
 };

@@ -179,7 +179,7 @@ const NaviresPage = () => {
       STATUS_FR[v.status] || v.status,
       v.eta ? new Date(v.eta).toLocaleString() : '',
       v.etd ? new Date(v.etd).toLocaleString() : '',
-      TYPE_FR[v.vessel_type as keyof typeof TYPE_FR] || v.vessel_type,
+      v.vessel_type ? TYPE_FR[v.vessel_type as keyof typeof TYPE_FR] || v.vessel_type : '-',
       v.imo_number
     ]);
     const csvContent = [headers, ...rows]
@@ -248,22 +248,24 @@ const NaviresPage = () => {
               <th className="py-2 px-4">Arrivée</th>
               <th className="py-2 px-4">Départ</th>
               <th className="py-2 px-4">Type de Cargo</th>
+              <th className="py-2 px-4">IMO</th>
               <th className="py-2 px-4">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-8">Chargement...</td></tr>
+              <tr className="row-hover"><td colSpan={7} className="text-center py-8">Chargement...</td></tr>
             ) : filteredVessels.length === 0 ? (
-              <tr><td colSpan={6} className="text-center py-8">Aucun navire trouvé.</td></tr>
+              <tr className="row-hover"><td colSpan={7} className="text-center py-8">Aucun navire trouvé.</td></tr>
             ) : (
               filteredVessels.map((vessel) => (
-                <tr key={vessel.id} className="border-t last:border-b">
-                  <td className="py-2 px-4 font-medium">{vessel.name || '-'}</td>
+                <tr key={vessel.id} className="border-t last:border-b row-hover">
+                  <td className="py-2 px-4 font-medium">{vessel.name}</td>
                   <td className="py-2 px-4"><StatusBadge status={vessel.status} /></td>
                   <td className="py-2 px-4">{vessel.eta ? new Date(vessel.eta).toLocaleString() : '-'}</td>
                   <td className="py-2 px-4">{vessel.etd ? new Date(vessel.etd).toLocaleString() : '-'}</td>
-                  <td className="py-2 px-4">{vessel.vessel_type ? (TYPE_FR[vessel.vessel_type as keyof typeof TYPE_FR] || vessel.vessel_type) : '-'}</td>
+                  <td className="py-2 px-4">{vessel.vessel_type && (Object.keys(TYPE_FR).includes(vessel.vessel_type)) ? TYPE_FR[vessel.vessel_type as keyof typeof TYPE_FR] : vessel.vessel_type || '-'}</td>
+                  <td className="py-2 px-4">{vessel.imo_number}</td>
                   <td className="py-2 px-4">
                     <Menu as="div" className="relative inline-block text-left">
                       <Menu.Button className="inline-flex justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75">
@@ -281,7 +283,7 @@ const NaviresPage = () => {
                         <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                           <div className="py-1">
                             <Menu.Item>
-                              {({ active }: { active: boolean }) => (
+                              {({ active }) => (
                                 <button
                                   onClick={() => setDetailsModal({ open: true, vessel })}
                                   className={`${
@@ -292,10 +294,10 @@ const NaviresPage = () => {
                                 </button>
                               )}
                             </Menu.Item>
-                            {user && user.role === 'admin' && (
+                            {(user?.role === 'admin' || user?.role === 'supervisor') && (
                               <>
                                 <Menu.Item>
-                                  {({ active }: { active: boolean }) => (
+                                  {({ active }) => (
                                     <button
                                       onClick={() => openEditModal(vessel)}
                                       className={`${
@@ -306,18 +308,20 @@ const NaviresPage = () => {
                                     </button>
                                   )}
                                 </Menu.Item>
-                                <Menu.Item>
-                                  {({ active }: { active: boolean }) => (
-                                    <button
-                                      onClick={() => openDeleteConfirm(vessel)}
-                                      className={`${
-                                        active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                      } group flex w-full items-center px-4 py-2 text-sm`}
-                                    >
-                                      Supprimer
-                                    </button>
-                                  )}
-                                </Menu.Item>
+                                {user?.role === 'admin' && (
+                                  <Menu.Item>
+                                    {({ active }) => (
+                                      <button
+                                        onClick={() => openDeleteConfirm(vessel)}
+                                        className={`${
+                                          active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                        } group flex w-full items-center px-4 py-2 text-sm`}
+                                      >
+                                        Supprimer
+                                      </button>
+                                    )}
+                                  </Menu.Item>
+                                )}
                               </>
                             )}
                           </div>
@@ -330,88 +334,83 @@ const NaviresPage = () => {
             )}
           </tbody>
         </table>
-        {/* Details Modal */}
-        {detailsModal.open && detailsModal.vessel && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-lg p-8 min-w-[350px] max-w-[90vw]">
-              <h2 className="text-xl font-bold mb-4">Détails du Navire</h2>
-              <div className="flex flex-col gap-2">
-                <div><b>Nom:</b> {detailsModal.vessel.name}</div>
-                <div><b>IMO Number:</b> {detailsModal.vessel.imo_number}</div>
-                <div><b>Type:</b> {detailsModal.vessel.vessel_type ? (TYPE_FR[detailsModal.vessel.vessel_type as keyof typeof TYPE_FR] || detailsModal.vessel.vessel_type) : '-'}</div>
-                <div><b>Statut:</b> <StatusBadge status={detailsModal.vessel.status} /></div>
-                <div><b>Arrivée:</b> {detailsModal.vessel.eta ? new Date(detailsModal.vessel.eta).toLocaleString() : '-'}</div>
-                <div><b>Départ:</b> {detailsModal.vessel.etd ? new Date(detailsModal.vessel.etd).toLocaleString() : '-'}</div>
-                <div><b>Capacité TEU:</b> {detailsModal.vessel.capacity_teu ?? '-'}</div>
-                <div><b>Longueur (m):</b> {detailsModal.vessel.length_overall ?? '-'}</div>
-                <div><b>Berth ID:</b> {detailsModal.vessel.berth ?? '-'}</div>
-                <div><b>Créé le:</b> {detailsModal.vessel.created_at ? new Date(detailsModal.vessel.created_at).toLocaleString() : '-'}</div>
-                <div><b>Modifié le:</b> {detailsModal.vessel.updated_at ? new Date(detailsModal.vessel.updated_at).toLocaleString() : '-'}</div>
-              </div>
-              <div className="flex justify-end mt-6">
-                <button onClick={() => setDetailsModal({ open: false, vessel: null })} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition">Fermer</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Form Modal (Create/Edit) */}
-        {formModal.open && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-lg p-8 min-w-[350px] max-w-[95vw]">
-              <h2 className="text-xl font-bold mb-4">{formModal.mode === 'create' ? 'Ajouter' : 'Modifier'} un navire</h2>
-              {formError && <div className="mb-2 text-red-600">{formError}</div>}
-              <form onSubmit={handleFormSubmit} className="flex flex-col gap-3">
-                <input className="border rounded px-3 py-2" name="name" placeholder="Nom" value={form.name || ''} onChange={handleFormChange} required />
-                <input className="border rounded px-3 py-2" name="imo_number" placeholder="IMO" value={form.imo_number || ''} onChange={handleFormChange} required />
-                <select className="border rounded px-3 py-2" name="vessel_type" value={form.vessel_type || ''} onChange={handleFormChange} required>
-                  <option value="">Type</option>
-                  <option value="container_ship">Porte-conteneurs</option>
-                  <option value="bulk_carrier">Vraquier</option>
-                  <option value="tanker">Pétrolier</option>
-                  <option value="ro_ro">Rouliers</option>
-                  <option value="general_cargo">Cargo général</option>
-                </select>
-                <select className="border rounded px-3 py-2" name="status" value={form.status || ''} onChange={handleFormChange} required>
-                  <option value="">Statut</option>
-                  <option value="approaching">En approche</option>
-                  <option value="at_berth">À quai</option>
-                  <option value="departing">En départ</option>
-                  <option value="departed">Parti</option>
-                  <option value="waiting">En attente</option>
-                </select>
-                <input className="border rounded px-3 py-2" name="eta" placeholder="Arrivée (YYYY-MM-DDTHH:mm)" value={form.eta || ''} onChange={handleFormChange} type="datetime-local" />
-                <input className="border rounded px-3 py-2" name="etd" placeholder="Départ (YYYY-MM-DDTHH:mm)" value={form.etd || ''} onChange={handleFormChange} type="datetime-local" />
-                <input className="border rounded px-3 py-2" name="capacity_teu" placeholder="Capacité TEU" value={form.capacity_teu || ''} onChange={handleFormChange} type="number" />
-                <input className="border rounded px-3 py-2" name="length_overall" placeholder="Longueur (m)" value={form.length_overall || ''} onChange={handleFormChange} type="number" />
-                <div className="flex gap-2 mt-2">
-                  <button className="px-6 py-2 bg-blueMarine text-white rounded-lg font-semibold shadow hover:bg-blue-800 transition" type="submit">{formModal.mode === 'create' ? 'Ajouter' : 'Enregistrer'}</button>
-                  <button className="px-6 py-2 bg-gray-400 text-white rounded-lg font-semibold shadow hover:bg-gray-500 transition" type="button" onClick={closeFormModal}>Annuler</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-        {/* Delete Confirmation Modal */}
-        {deleteConfirm.open && deleteConfirm.vessel && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-lg p-8 min-w-[350px] max-w-[95vw]">
-              <h2 className="text-xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
-              <p>Êtes-vous sûr de vouloir supprimer le navire <b>{deleteConfirm.vessel.name}</b> ?</p>
-              <div className="flex gap-2 mt-6 justify-end">
-                <button className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold shadow hover:bg-red-600 transition" onClick={handleDelete}>Supprimer</button>
-                <button className="px-6 py-2 bg-gray-400 text-white rounded-lg font-semibold shadow hover:bg-gray-500 transition" onClick={closeDeleteConfirm}>Annuler</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Message de succès */}
-        {successMsg && (
-          <div className="fixed top-8 right-8 z-50 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 border-2 border-green-200 animate-fade-in">
-            <span className="font-semibold">{successMsg}</span>
-            <button className="ml-4 text-white text-2xl leading-none hover:text-green-200" onClick={() => setSuccessMsg('')}>×</button>
-          </div>
-        )}
       </div>
+      {/* Details Modal */}
+      {detailsModal.open && detailsModal.vessel && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 min-w-[350px] max-w-[90vw]">
+            <h2 className="text-xl font-bold mb-4">Détails du Navire</h2>
+            <div className="flex flex-col gap-2">
+              <div><b>Nom:</b> {detailsModal.vessel.name}</div>
+              <div><b>IMO:</b> {detailsModal.vessel.imo_number}</div>
+              <div><b>Statut:</b> <StatusBadge status={detailsModal.vessel.status} /></div>
+              <div><b>Type:</b> {detailsModal.vessel.vessel_type && (Object.keys(TYPE_FR).includes(detailsModal.vessel.vessel_type)) ? TYPE_FR[detailsModal.vessel.vessel_type as keyof typeof TYPE_FR] : detailsModal.vessel.vessel_type || '-'}</div>
+              <div><b>Arrivée:</b> {detailsModal.vessel.eta ? new Date(detailsModal.vessel.eta).toLocaleString() : '-'}</div>
+              <div><b>Départ:</b> {detailsModal.vessel.etd ? new Date(detailsModal.vessel.etd).toLocaleString() : '-'}</div>
+              <div><b>Capacité (TEU):</b> {detailsModal.vessel.capacity_teu ?? '-'}</div>
+              <div><b>Longueur (m):</b> {detailsModal.vessel.length_overall ?? '-'}</div>
+              {/* Add more details as needed */}
+            </div>
+            <div className="flex justify-end mt-6">
+              <button onClick={() => setDetailsModal({ open: false, vessel: null })} className="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300 transition btn-hover">Fermer</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Form Modal (Create/Edit) */}
+      {formModal.open && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 min-w-[350px] max-w-[95vw]">
+            <h2 className="text-xl font-bold mb-4">{formModal.mode === 'create' ? 'Ajouter' : 'Modifier'} un navire</h2>
+            {formError && <div className="mb-2 text-red-600">{formError}</div>}
+            <form onSubmit={handleFormSubmit} className="flex flex-col gap-3">
+              <input className="border rounded px-3 py-2" name="name" placeholder="Nom du Navire" value={form.name || ''} onChange={handleFormChange} required />
+              <input className="border rounded px-3 py-2" name="imo_number" placeholder="Numéro IMO" value={form.imo_number || ''} onChange={handleFormChange} required />
+              <select className="border rounded px-3 py-2" name="vessel_type" value={form.vessel_type || ''} onChange={handleFormChange} required>
+                <option value="">Type de Navire</option>
+                {Object.keys(TYPE_FR).map(k => (
+                  <option key={k} value={k}>{TYPE_FR[k]}</option>
+                ))}
+              </select>
+              <select className="border rounded px-3 py-2" name="status" value={form.status || ''} onChange={handleFormChange} required>
+                <option value="">Statut</option>
+                {Object.keys(STATUS_FR).map(k => (
+                  <option key={k} value={k}>{STATUS_FR[k]}</option>
+                ))}
+              </select>
+              <input className="border rounded px-3 py-2" name="eta" placeholder="Date/Heure Arrivée (ex: 2023-10-26T10:00:00Z)" value={form.eta || ''} onChange={handleFormChange} type="datetime-local" />
+              <input className="border rounded px-3 py-2" name="etd" placeholder="Date/Heure Départ (ex: 2023-10-26T18:00:00Z)" value={form.etd || ''} onChange={handleFormChange} type="datetime-local" />
+              <input className="border rounded px-3 py-2" name="berth_id" placeholder="Poste à quai" value={form.berth_id || ''} onChange={handleFormChange} type="number" />
+              <input className="border rounded px-3 py-2" name="capacity_teu" placeholder="Capacité (TEU)" value={form.capacity_teu || ''} onChange={handleFormChange} type="number" />
+              <input className="border rounded px-3 py-2" name="length_overall" placeholder="Longueur (m)" value={form.length_overall || ''} onChange={handleFormChange} type="number" step="0.1"/>
+              <div className="flex gap-2 mt-2">
+                <button className="px-6 py-2 bg-blueMarine text-white rounded-lg font-semibold shadow hover:bg-blue-800 transition" type="submit">{formModal.mode === 'create' ? 'Ajouter' : 'Enregistrer'}</button>
+                <button className="px-6 py-2 bg-gray-400 text-white rounded-lg font-semibold shadow hover:bg-gray-500 transition" type="button" onClick={closeFormModal}>Annuler</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.open && deleteConfirm.vessel && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-8 min-w-[350px] max-w-[95vw]">
+            <h2 className="text-xl font-bold mb-4 text-red-600">Confirmer la suppression</h2>
+            <p>Êtes-vous sûr de vouloir supprimer le navire <b>{deleteConfirm.vessel.name}</b> ?</p>
+            <div className="flex gap-2 mt-6 justify-end">
+              <button className="px-6 py-2 bg-red-500 text-white rounded-lg font-semibold shadow hover:bg-red-600 transition" onClick={handleDelete}>Supprimer</button>
+              <button className="px-6 py-2 bg-gray-400 text-white rounded-lg font-semibold shadow hover:bg-gray-500 transition" onClick={closeDeleteConfirm}>Annuler</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Message de succès */}
+      {successMsg && (
+        <div className="fixed top-8 right-8 z-50 bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 border-2 border-green-200 animate-fade-in">
+          <span className="font-semibold">{successMsg}</span>
+          <button className="ml-4 text-white text-2xl leading-none hover:text-green-200" onClick={() => setSuccessMsg('')}>×</button>
+        </div>
+      )}
     </div>
   );
 };

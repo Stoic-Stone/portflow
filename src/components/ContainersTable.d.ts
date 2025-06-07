@@ -1,4 +1,9 @@
 import React from 'react';
  
-declare const ContainersTable: React.FC;
+declare interface ContainersTableProps {
+  tableClassName?: string;
+  statusFilter?: string;
+}
+
+declare const ContainersTable: React.FC<ContainersTableProps>;
 export default ContainersTable; 

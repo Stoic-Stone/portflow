@@ -37,13 +37,13 @@ function StatusBadge({ status }) {
   );
 }
 
-export default function ContainersTable({ tableClassName = "" }) {
+export default function ContainersTable({ tableClassName = "", statusFilter: statusFilterProp = "" }) {
   const [containers, setContainers] = useState([]);
   const [vessels, setVessels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detailsModal, setDetailsModal] = useState({ open: false, container: null });
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(statusFilterProp);
   const [typeFilter, setTypeFilter] = useState('');
   const [formModal, setFormModal] = useState({ open: false, mode: 'create', container: null });
   const [form, setForm] = useState({});
@@ -78,6 +78,10 @@ export default function ContainersTable({ tableClassName = "" }) {
     window.addEventListener('global-search', handler);
     return () => window.removeEventListener('global-search', handler);
   }, []);
+
+  useEffect(() => {
+    setStatusFilter(statusFilterProp);
+  }, [statusFilterProp]);
 
   const getVesselName = (id) => {
     const vessel = vessels.find((v) => v.id === id);
@@ -310,7 +314,8 @@ export default function ContainersTable({ tableClassName = "" }) {
                               </button>
                             )}
                           </Menu.Item>
-                          {user && user.role === 'admin' && (
+                          {/* Modify action visible for admin and supervisor */}
+                          {(user?.role === 'admin' || user?.role === 'supervisor') && (
                             <>
                               <Menu.Item>
                                 {({ active }) => (
@@ -324,18 +329,21 @@ export default function ContainersTable({ tableClassName = "" }) {
                                   </button>
                                 )}
                               </Menu.Item>
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <button
-                                    onClick={() => openDeleteConfirm(container)}
-                                    className={`${
-                                      active ? 'bg-red-50 text-red-700' : 'text-red-600'
-                                    } group flex w-full items-center px-4 py-2 text-sm`}
-                                  >
-                                    Supprimer
-                                  </button>
-                                )}
-                              </Menu.Item>
+                              {/* Delete action only visible for admin */}
+                              {user?.role === 'admin' && (
+                                <Menu.Item>
+                                  {({ active }) => (
+                                    <button
+                                      onClick={() => openDeleteConfirm(container)}
+                                      className={`${
+                                        active ? 'bg-red-50 text-red-700' : 'text-red-600'
+                                      } group flex w-full items-center px-4 py-2 text-sm`}
+                                    >
+                                      Supprimer
+                                    </button>
+                                  )}
+                                </Menu.Item>
+                              )}
                             </>
                           )}
                         </div>
