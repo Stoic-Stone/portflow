@@ -3,6 +3,7 @@ import Sidebar from './navigation/Sidebar';
 import TopHeader from './navigation/TopHeader';
 import { useAppContext } from '../context/AppContext';
 import { Outlet } from 'react-router-dom';
+import { AIAssistant } from './AIAssistant';
 
 interface LayoutProps {
   children?: ReactNode;
@@ -23,6 +24,7 @@ export const Layout = ({ children }: LayoutProps) => {
           {children}
           <Outlet />
         </main>
+        <AIAssistant />
       </div>
     </div>
   );

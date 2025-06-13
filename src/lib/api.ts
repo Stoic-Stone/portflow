@@ -1,4 +1,6 @@
 import { supabase } from './supabase';
+import { createClient } from '@supabase/supabase-js';
+import { generateResponse, SYSTEM_PROMPT, ChatMessage } from './ollama';
 
 const API_URL = 'http://localhost:3001';
 
@@ -236,3 +238,57 @@ export interface SimulationLog {
   timestamp: string;
   details: string;
 } 
+
+const supabaseClient = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
+
+export const handleChatRequest = async (
+  message: string,
+  context: any = {}
+): Promise<string> => {
+  try {
+    // Prepare messages with system prompt
+    const messages: ChatMessage[] = [
+      { role: 'assistant', content: SYSTEM_PROMPT },
+      { role: 'user', content: message }
+    ];
+
+    // Add context from Supabase if available
+    if (context.containerId) {
+      const { data: container } = await supabaseClient
+        .from('containers')
+        .select('*')
+        .eq('id', context.containerId)
+        .single();
+
+      if (container) {
+        messages.push({
+          role: 'assistant',
+          content: `Current container status: ${JSON.stringify(container)}`
+        });
+      }
+    }
+
+    // Generate response using Ollama
+    const response = await generateResponse(messages);
+
+    // Handle any UI updates or data modifications based on the response
+    if (response.includes('update_status')) {
+      // Extract status update from response
+      const statusMatch = response.match(/update_status:(\w+)/);
+      if (statusMatch && context.containerId) {
+        await supabaseClient
+          .from('containers')
+          .update({ status: statusMatch[1] })
+          .eq('id', context.containerId);
+      }
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Error handling chat request:', error);
+    throw new Error('Failed to process chat request');
+  }
+}; 
